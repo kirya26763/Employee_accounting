@@ -17,25 +17,36 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public Employee employeeMaxSalaryDepartment(String departmentId) {
+    public List<Employee> employeesByDepartment(String departmentId) {
         return employeeService.findAll().stream()
-                .filter(employee -> employee.getDepartment().equals(departmentId))
+                .filter(e -> e.getDepartment().equals(departmentId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int salarySumByDepartment(String departmentId) {
+        return employeesByDepartment(departmentId).stream()
+                .mapToInt(Employee::getSalary)
+                .sum();
+    }
+
+    @Override
+    public Employee employeeMaxSalaryDepartment(String departmentId) {
+        return employeesByDepartment(departmentId).stream()
                 .max(Comparator.comparingInt(Employee::getSalary))
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("Нет сотрудников в отделе"));
     }
 
     @Override
     public Employee employeeMinSalaryDepartment(String departmentId) {
-        return employeeService.findAll().stream()
-                .filter(employee -> employee.getDepartment().equals(departmentId))
+        return employeesByDepartment(departmentId).stream()
                 .min(Comparator.comparingInt(Employee::getSalary))
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("Нет сотрудников в отделе"));
     }
 
     @Override
-    public Map<String, List<Employee>> allEmployeeDepartment(String departmentId) {
+    public Map<String, List<Employee>> allEmployeeDepartment() {
         return employeeService.findAll().stream()
-                .filter(employee -> employee.getDepartment().equals(departmentId))
                 .collect(Collectors.groupingBy(Employee::getDepartment));
     }
 }
